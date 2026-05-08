@@ -1,7 +1,39 @@
-﻿using EpPaciencia.Models;
+﻿using System.Runtime.InteropServices;
+using System.Text;
+using EpPaciencia.Models;
 using EpPaciencia.UI;
 
+Console.OutputEncoding = Encoding.UTF8;
+HabilitarTerminalVirtualWindows();
+
 var baralho = new Baralho();
+
+static void HabilitarTerminalVirtualWindows()
+{
+    if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        return;
+
+    const int STD_OUTPUT_HANDLE = -11;
+    const uint ENABLE_VIRTUAL_TERMINAL_PROCESSING = 0x0004;
+
+    var handle = GetStdHandle(STD_OUTPUT_HANDLE);
+    if (handle == IntPtr.Zero || handle == new IntPtr(-1))
+        return;
+
+    if (!GetConsoleMode(handle, out uint mode))
+        return;
+
+    SetConsoleMode(handle, mode | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
+}
+
+[DllImport("kernel32.dll", SetLastError = true)]
+static extern IntPtr GetStdHandle(int nStdHandle);
+
+[DllImport("kernel32.dll", SetLastError = true)]
+static extern bool GetConsoleMode(IntPtr hConsoleHandle, out uint lpMode);
+
+[DllImport("kernel32.dll", SetLastError = true)]
+static extern bool SetConsoleMode(IntPtr hConsoleHandle, uint dwMode);
 
 while (true)
 {
